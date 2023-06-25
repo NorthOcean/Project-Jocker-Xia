@@ -1,8 +1,8 @@
 """
 @Author: Conghao Wong
 @Date: 2023-06-20 16:48:45
-@LastEditors: Conghao Wong
-@LastEditTime: 2023-06-25 10:42:59
+@LastEditors: Beihao Xia
+@LastEditTime: 2023-06-25 16:22:33
 @Description: file content
 @Github: https://cocoon2wong.github.io
 @Copyright 2023 Conghao Wong, All Rights Reserved.
@@ -84,7 +84,8 @@ class AlphaModel(BaseAgentModel):
             self.structure.loss.set({loss.keyl2: 1.0, loss.keyl2_past: 1.0})
 
         # Preprocess
-        self.set_preprocess_layers([CenterMove()])
+        # self.set_preprocess_layers([CenterMove()])
+        self.set_preprocess()
 
         # Layers
         self.linear0 = layers.LinearLayerND(obs_frames=self.args.obs_frames,
