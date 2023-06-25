@@ -1,8 +1,8 @@
 """
 @Author: Conghao Wong
 @Date: 2022-08-03 10:50:46
-@LastEditors: Conghao Wong
-@LastEditTime: 2023-06-25 15:19:19
+@LastEditors: Beihao Xia
+@LastEditTime: 2023-06-25 16:35:07
 @Description: file content
 @Github: https://github.com/cocoon2wong
 @Copyright 2022 Conghao Wong, All Rights Reserved.
@@ -21,7 +21,7 @@ from ..constant import INPUT_TYPES
 from ..utils import POOLING_BEFORE_SAVING, dir_check
 from .__base import Annotation, AnnotationManager, BaseInputManager
 from .__splitManager import SplitManager
-from .agent_based import Agent, AgentFilesManager, TrajectoryManager, maps
+from .agent_based import Agent, AgentFilesManager, TrajectoryManager
 from .frame_based import FrameFilesManager, FrameManager
 
 
@@ -150,13 +150,6 @@ class AgentManager(BaseManager):
         Set the type of model inputs and outputs.
         Accept all types in `INPUT_TYPES`.
         """
-        if (t := INPUT_TYPES.MAP) in inputs_type:
-            p = POOLING_BEFORE_SAVING
-            self.ext_types.append(t)
-            self.ext_mgrs.append(maps.MapParasManager(self))
-            self.ext_mgrs.append(maps.TrajMapManager(self, p))
-            self.ext_mgrs.append(maps.TrajMapManager_seg(self, p))
-            self.ext_mgrs.append(maps.SocialMapManager(self, p))
 
         if (t := INPUT_TYPES.MAP_PARAS) in inputs_type:
             self.ext_types.append(t)

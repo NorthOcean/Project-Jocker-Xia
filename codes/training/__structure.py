@@ -1,8 +1,8 @@
 """
 @Author: Conghao Wong
 @Date: 2022-06-20 16:27:21
-@LastEditors: Conghao Wong
-@LastEditTime: 2023-06-25 15:18:06
+@LastEditors: Beihao Xia
+@LastEditTime: 2023-06-25 16:40:22
 @Description: file content
 @Github: https://github.com/cocoon2wong
 @Copyright 2022 Conghao Wong, All Rights Reserved.
@@ -20,7 +20,6 @@ from ..basemodels import Model
 from ..constant import ANN_TYPES, INPUT_TYPES
 from ..dataset import AgentManager, Annotation, AnnotationManager, SplitManager
 from ..utils import WEIGHTS_FORMAT, dir_check
-from ..vis import Visualization
 from . import loss
 from .loss import LossManager
 

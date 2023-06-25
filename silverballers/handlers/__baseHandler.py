@@ -1,8 +1,8 @@
 """
 @Author: Conghao Wong
 @Date: 2022-06-22 09:35:52
-@LastEditors: Conghao Wong
-@LastEditTime: 2023-06-20 09:19:32
+@LastEditors: Beihao Xia
+@LastEditTime: 2023-06-25 16:38:06
 @Description: file content
 @Github: https://github.com/cocoon2wong
 @Copyright 2022 Conghao Wong, All Rights Reserved.
@@ -12,7 +12,7 @@ import numpy as np
 import tensorflow as tf
 
 from codes.constant import INPUT_TYPES
-from codes.managers import (AgentManager, MapParasManager, SecondaryBar,
+from codes.managers import (AgentManager, SecondaryBar,
                             Structure)
 from codes.training import loss
 from codes.utils import POOLING_BEFORE_SAVING
@@ -143,27 +143,7 @@ class BaseHandlerModel(BaseSubnetwork):
         pred_o = outputs_p[0]
 
         # Calculate scores
-        if ((INPUT_TYPES.MAP in self.input_types)
-                and (INPUT_TYPES.MAP_PARAS in self.input_types)):
-
-            map_mgr = self.get_top_manager().get_member(
-                AgentManager).get_member(MapParasManager)
-            scores = map_mgr.score(trajs=outputs_p[0],
-                                   maps=inputs[1],
-                                   map_paras=inputs[2],
-                                   centers=inputs[0][..., -1, :])
-
-            # Pick trajectories
-            # Only work when it play as the subnetwork
-            if not self.as_single_model:
-                run_args: SilverballersArgs = self.get_top_manager().args
-                if (p := run_args.pick_trajectories) < 1.0:
-                    pred_o = map_mgr.pick_trajectories(pred_o, scores, p)
-
-            return (pred_o, scores) + outputs_p[1:]
-
-        else:
-            return outputs_p
+        return outputs_p
 
     def print_info(self, **kwargs):
         info = {'Transform type': self.args.T,
