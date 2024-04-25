@@ -2,7 +2,7 @@
 @Author: Beihao Xia
 @Date: 2023-03-20 16:15:25
 @LastEditors: Conghao Wong
-@LastEditTime: 2024-03-21 09:46:56
+@LastEditTime: 2024-04-25 20:48:40
 @Description: file content
 @Github: https://cocoon2wong.github.io
 @Copyright 2023 Beihao Xia, All Rights Reserved.
@@ -10,7 +10,6 @@
 
 import torch
 
-from qpid.args import Args
 from qpid.constant import INPUT_TYPES, PROCESS_TYPES
 from qpid.model import Model, layers, transformer
 from qpid.training import Structure
@@ -29,10 +28,11 @@ class MinimalVModel(Model):
     - considers nothing about agents' multimodality.
     """
 
-    def __init__(self, Args: Args, structure=None, *args, **kwargs):
-        super().__init__(Args, structure, *args, **kwargs)
+    def __init__(self, structure=None, *args, **kwargs):
+        super().__init__(structure, *args, **kwargs)
 
         # Init args
+        self.args._set('output_pred_steps', 'all')
         self.v_args = self.args.register_subargs(VArgs, 'v_args')
         self.v_args._set_default('T', 'none')
 

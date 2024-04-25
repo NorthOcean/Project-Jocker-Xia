@@ -2,7 +2,7 @@
 @Author: Conghao Wong
 @Date: 2022-07-05 16:00:26
 @LastEditors: Conghao Wong
-@LastEditTime: 2024-03-21 09:50:57
+@LastEditTime: 2024-04-25 20:48:24
 @Description: First stage V^2-Net model.
 @Github: https://github.com/cocoon2wong
 @Copyright 2022 Conghao Wong, All Rights Reserved.
@@ -10,7 +10,6 @@
 
 import torch
 
-from qpid.args import Args
 from qpid.constant import ANN_TYPES, INPUT_TYPES
 from qpid.model import Model, layers, transformer
 from qpid.model.transformer import Transformer
@@ -32,8 +31,8 @@ class VAModel(Model):
     FFTs are applied before and after the model implementing.
     """
 
-    def __init__(self, Args: Args, structure=None, *args, **kwargs):
-        super().__init__(Args, structure, *args, **kwargs)
+    def __init__(self, structure=None, *args, **kwargs):
+        super().__init__(structure, *args, **kwargs)
 
         # Init args
         self.args._set_default('K', 1)
@@ -143,9 +142,8 @@ class VBModel(Model):
     their trajectories.
     """
 
-    def __init__(self, Args: Args, structure=None, *args, **kwargs):
-
-        super().__init__(Args, structure, *args, **kwargs)
+    def __init__(self, structure=None, *args, **kwargs):
+        super().__init__(structure, *args, **kwargs)
 
         from qpid.mods.contextMaps import ContextEncoding
 

@@ -2,7 +2,7 @@
 @Author: Conghao Wong
 @Date: 2023-11-07 16:51:07
 @LastEditors: Conghao Wong
-@LastEditTime: 2024-03-21 09:54:17
+@LastEditTime: 2024-04-25 20:48:00
 @Description: file content
 @Github: https://cocoon2wong.github.io
 @Copyright 2023 Conghao Wong, All Rights Reserved.
@@ -10,7 +10,6 @@
 
 import torch
 
-from qpid.args import Args
 from qpid.constant import INPUT_TYPES
 from qpid.model import Model, layers, process, transformer
 from qpid.training import Structure
@@ -35,8 +34,8 @@ class EVSPCModel(Model, BaseSocialCircleModel):
     the adaptive fusion strategy to fuse SocialCircle and PhysicalCircle.
     """
 
-    def __init__(self, Args: Args, structure=None, *args, **kwargs):
-        super().__init__(Args, structure, *args, **kwargs)
+    def __init__(self, structure=None, *args, **kwargs):
+        super().__init__(structure, *args, **kwargs)
 
         # Init args
         self.args._set_default('K', 1)

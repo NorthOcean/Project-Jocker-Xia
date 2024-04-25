@@ -2,7 +2,7 @@
 @Author: Conghao Wong
 @Date: 2024-03-20 10:12:55
 @LastEditors: Conghao Wong
-@LastEditTime: 2024-03-21 09:54:36
+@LastEditTime: 2024-04-25 20:49:00
 @Description: file content
 @Github: https://cocoon2wong.github.io
 @Copyright 2024 Conghao Wong, All Rights Reserved.
@@ -10,7 +10,6 @@
 
 import torch
 
-from qpid.args import Args
 from qpid.constant import INPUT_TYPES
 from qpid.model import Model, layers, transformer
 from qpid.training import Structure
@@ -26,8 +25,8 @@ class EVModel(Model):
     heterogeneous trajectory prediction via spectrums".
     """
 
-    def __init__(self, Args: Args, structure=None, *args, **kwargs):
-        super().__init__(Args, structure, *args, **kwargs)
+    def __init__(self, structure=None, *args, **kwargs):
+        super().__init__(structure, *args, **kwargs)
 
         # Init args
         self.args._set_default('K', 1)
