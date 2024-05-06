@@ -2,7 +2,7 @@
 @Author: Conghao Wong
 @Date: 2023-07-12 17:38:42
 @LastEditors: Conghao Wong
-@LastEditTime: 2024-01-29 14:37:44
+@LastEditTime: 2024-05-06 17:12:20
 @Description: file content
 @Github: https://cocoon2wong.github.io
 @Copyright 2023 Conghao Wong, All Rights Reserved.
@@ -161,7 +161,7 @@ class SocialCircleToy():
             self.t.args._set_default('force_clip', CLIP)
             self.init_model()
             self.t.log(
-                f'Model `{t.args.loada}` and dataset files ({CLIP}) loaded.')
+                f'Model `{t.model.s_args.loada}` and dataset files ({CLIP}) loaded.')
         except Exception as e:
             print(e)
 

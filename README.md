@@ -59,6 +59,9 @@ About the `argtype`:
 - `--anntype`: type=`str`, argtype=`static`.
   Model's predicted annotation type. Can be `'coordinate'` or `'boundingbox'`. 
   The default value is `coordinate`.
+- `--auto_clear`: type=`int`, argtype=`temporary`.
+  Controls whether to clear all other saved weights except for the best one. It performs similar as running `python scripts/clear.py --logs logs`. 
+  The default value is `1`.
 - `--batch_size` (short for `-bs`): type=`int`, argtype=`dynamic`.
   Batch size when implementation. 
   The default value is `5000`.
@@ -227,7 +230,7 @@ About the `argtype`:
 
 ### Visualization Args
 
-- `--draw_distribution`: type=`int`, argtype=`temporary`.
+- `--draw_distribution` (short for `-dd`): type=`int`, argtype=`temporary`.
   Controls whether to draw distributions of predictions instead of points. If `draw_distribution == 0`, it will draw results as normal coordinates; If `draw_distribution == 1`, it will draw all results in the distribution way, and points from different time steps will be drawn with different colors. 
   The default value is `0`.
 - `--draw_exclude_type`: type=`str`, argtype=`temporary`.
