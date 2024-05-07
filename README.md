@@ -230,6 +230,9 @@ About the `argtype`:
 
 ### Visualization Args
 
+- `--distribution_steps`: type=`str`, argtype=`temporary`.
+  Controls which time step(s) should be considered when visualizing the distribution of forecasted trajectories. It accepts one or more integer numbers (started with 0) split by `'_'`. For example, `'4_8_11'`. Set it to `'all'` to show the distribution of all predictions. 
+  The default value is `all`.
 - `--draw_distribution` (short for `-dd`): type=`int`, argtype=`temporary`.
   Controls whether to draw distributions of predictions instead of points. If `draw_distribution == 0`, it will draw results as normal coordinates; If `draw_distribution == 1`, it will draw all results in the distribution way, and points from different time steps will be drawn with different colors. 
   The default value is `0`.
