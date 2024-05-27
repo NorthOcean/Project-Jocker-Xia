@@ -2,7 +2,7 @@
 @Author: Conghao Wong
 @Date: 2023-08-08 14:55:56
 @LastEditors: Conghao Wong
-@LastEditTime: 2024-03-13 10:43:10
+@LastEditTime: 2024-05-27 15:59:04
 @Description: file content
 @Github: https://cocoon2wong.github.io
 @Copyright 2023 Conghao Wong, All Rights Reserved.
@@ -187,6 +187,7 @@ class PhysicalCircleLayer(torch.nn.Module):
                  use_distance: bool | int = True,
                  use_direction: bool | int = True,
                  vision_radius: float = 2.0,
+                 pool_size: int = -1,
                  *args, **kwargs):
         """
         ## Partition Settings
@@ -206,6 +207,9 @@ class PhysicalCircleLayer(torch.nn.Module):
             For example, suppose that someone has moved 10 meters during the observation \
             period, and given the `vision_radius = 2.0`, its radius to compute on the \
             segmentation map will be `2.0 * 10 = 20` meters.
+        :param pool_size: The kerne size of maxpooling operation on the original \
+            segmentation maps. It is used to speed up the model inference. Set \
+            it to `-1` do disable the pooling operation.
         """
 
         super().__init__(*args, **kwargs)
@@ -222,11 +226,18 @@ class PhysicalCircleLayer(torch.nn.Module):
         self.radius = vision_radius
 
         # Compute all pixels' indices
-        xs, ys = torch.meshgrid(torch.arange(NORMALIZED_SIZE),
-                                torch.arange(NORMALIZED_SIZE),
+        pool_size = 1 if pool_size == -1 else pool_size
+        xs, ys = torch.meshgrid(torch.arange(NORMALIZED_SIZE//pool_size),
+                                torch.arange(NORMALIZED_SIZE//pool_size),
                                 indexing='ij')
         self.map_pos_pixel = torch.stack(
             [xs.reshape([-1]), ys.reshape([-1])], dim=-1).to(torch.float32)
+        self.map_pos_pixel = self.map_pos_pixel * pool_size + pool_size // 2
+
+        if pool_size > 1:
+            self.pool = torch.nn.MaxPool2d((pool_size, pool_size))
+        else:
+            self.pool = None
 
     @property
     def dim(self) -> int:
@@ -247,7 +258,12 @@ class PhysicalCircleLayer(torch.nn.Module):
         _obs = trajectories + current_pos
 
         # Treat seg maps as a long sequence
-        _maps = torch.flatten(seg_maps, start_dim=1, end_dim=-1)
+        if self.pool:
+            _maps = self.pool(seg_maps[..., None, :, :])[..., 0, :, :]
+        else:
+            _maps = seg_maps
+
+        _maps = torch.flatten(_maps, start_dim=1, end_dim=-1)
         map_safe_mask = (_maps <= SAFE_THRESHOLDS).to(torch.float32)
 
         # Compute velocity (moving length) during observation period

@@ -2,7 +2,7 @@
 @Author: Conghao Wong
 @Date: 2023-08-08 15:19:56
 @LastEditors: Conghao Wong
-@LastEditTime: 2023-12-27 15:05:35
+@LastEditTime: 2024-05-27 15:52:43
 @Description: file content
 @Github: https://cocoon2wong.github.io
 @Copyright 2023 Conghao Wong, All Rights Reserved.
@@ -108,3 +108,14 @@ class PhysicalCircleArgs(EmptyArgs):
         This arg is only used when running ablation studies.
         """
         return self._arg('use_empty_seg_maps', 0, argtype=TEMPORARY)
+
+    @property
+    def seg_map_pool_size(self) -> int:
+        """
+        Choose whether to max-pool the segmentation.
+        It is used to speed up the model inference, which may cause a little
+        bit performance drop.
+        Set it to `-1` to disable this function, and other integers will be
+        treated as the kernel size of the pooling layer. 
+        """
+        return self._arg('seg_map_pool_size', -1, argtype=TEMPORARY)

@@ -2,7 +2,7 @@
 @Author: Conghao Wong
 @Date: 2023-08-15 20:30:51
 @LastEditors: Conghao Wong
-@LastEditTime: 2024-04-25 20:47:17
+@LastEditTime: 2024-05-27 15:54:06
 @Description: file content
 @Github: https://cocoon2wong.github.io
 @Copyright 2023 Conghao Wong, All Rights Reserved.
@@ -87,7 +87,8 @@ class TransformerSPCModel(Model, BaseSocialCircleModel):
                                       use_velocity=self.sc_args.use_velocity,
                                       use_distance=self.sc_args.use_distance,
                                       use_direction=self.sc_args.use_direction,
-                                      vision_radius=self.pc_args.vision_radius)
+                                      vision_radius=self.pc_args.vision_radius,
+                                      pool_size=self.pc_args.seg_map_pool_size)
 
         # Fusion layer for SocialCircle and PhysicalCircle meta components
         self.spc = CircleFusionLayer(sclayer=self.sc,

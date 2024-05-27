@@ -221,6 +221,9 @@ About the `argtype`:
 - `--adaptive_fusion`: type=`int`, argtype=`static`.
   Choose whether to use the adaptive fusion strategy to fuse SocialCircles and PhysicalCircles into InteractionCircles. 
   The default value is `0`.
+- `--seg_map_pool_size`: type=`int`, argtype=`temporary`.
+  Choose whether to max-pool the segmentation. It is used to speed up the model inference, which may cause a little bit performance drop. Set it to `-1` to disable this function, and other integers will be treated as the kernel size of the pooling layer. 
+  The default value is `-1`.
 - `--use_empty_seg_maps`: type=`int`, argtype=`temporary`.
   Choose whether to use empty segmentation maps when computing the PhysicalCircle. The empty segmentation map means that EVERYWHERE in the scene is available for walking. This arg is only used when running ablation studies. 
   The default value is `0`.
@@ -250,5 +253,8 @@ About the `argtype`:
   The default value is `all`.
 - `--draw_lines`: type=`int`, argtype=`temporary`.
   Choose whether to draw lines between each two 2D trajectory points. 
+  The default value is `0`.
+- `--draw_on_empty_canvas`: type=`int`, argtype=`temporary`.
+  Controls whether to draw visualized results on the empty canvas instead of the actual video. 
   The default value is `0`.
 <!-- DO NOT CHANGE THIS LINE -->
