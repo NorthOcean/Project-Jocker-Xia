@@ -2,7 +2,7 @@
 @Author: Conghao Wong
 @Date: 2023-08-08 15:52:46
 @LastEditors: Conghao Wong
-@LastEditTime: 2024-03-20 21:04:43
+@LastEditTime: 2024-05-27 20:19:31
 @Description: file content
 @Github: https://cocoon2wong.github.io
 @Copyright 2023 Conghao Wong, All Rights Reserved.
@@ -14,6 +14,8 @@ from . import original_models
 from .__args import PhysicalCircleArgs, SocialCircleArgs
 from .ev_sc import EVSCModel, EVSCStructure
 from .ev_spc import EVSPCModel, EVSPCStructure
+from .msn_sc import MSNSCModel, MSNSCStructure
+from .msn_scp import MSNSCPlusModel, MSNSCPlusStructure
 from .trans_sc import TransformerSCModel, TransformerSCStructure
 from .trans_spc import TransformerSPCModel, TransformerSPCStructure
 from .v_sc import VSCModel, VSCStructure
@@ -30,12 +32,19 @@ __qpid.silverballers.register(
     # SocialCircle Models
     evsc=[EVSCStructure, EVSCModel],
     vsc=[VSCStructure, VSCModel],
+    msnsc=[MSNSCStructure, MSNSCModel],
     transsc=[TransformerSCStructure, TransformerSCModel],
 
-    # InteractionCircle Models (SocialCircle + PhysicalCircle)
+    # SocialCircle+ Models (SocialCircle + PhysicalCircle)
     evspc=[EVSPCStructure, EVSPCModel],
     vspc=[VSPCStructure, VSPCModel],
+    msnspc=[MSNSCPlusStructure, MSNSCPlusModel],
     transspc=[TransformerSPCStructure, TransformerSPCModel],
+
+    evscp=[EVSPCStructure, EVSPCModel],
+    vscp=[VSPCStructure, VSPCModel],
+    msnscp=[MSNSCPlusStructure, MSNSCPlusModel],
+    transscp=[TransformerSPCStructure, TransformerSPCModel],
 )
 
 __qpid._log_mod_loaded(__package__)
