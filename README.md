@@ -219,7 +219,7 @@ About the `argtype`:
 ### PhysicalCircle Args
 
 - `--adaptive_fusion`: type=`int`, argtype=`static`.
-  Choose whether to use the adaptive fusion strategy to fuse SocialCircles and PhysicalCircles into InteractionCircles. 
+  Choose whether to use the adaptive fusion strategy to fuse SocialCircle and PhysicalCircle into the SocialCircle+. 
   The default value is `0`.
 - `--seg_map_pool_size`: type=`int`, argtype=`temporary`.
   Choose whether to max-pool the segmentation. It is used to speed up the model inference, which may cause a little bit performance drop. Set it to `-1` to disable this function, and other integers will be treated as the kernel size of the pooling layer. 

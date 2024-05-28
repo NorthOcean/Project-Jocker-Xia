@@ -1,8 +1,8 @@
 """
 @Author: Conghao Wong
-@Date: 2023-11-07 16:51:07
+@Date: 2023-08-15 19:08:05
 @LastEditors: Conghao Wong
-@LastEditTime: 2024-05-27 15:36:27
+@LastEditTime: 2024-05-28 10:29:50
 @Description: file content
 @Github: https://cocoon2wong.github.io
 @Copyright 2023 Conghao Wong, All Rights Reserved.
@@ -20,14 +20,14 @@ from .__layers import CircleFusionLayer, PhysicalCircleLayer, SocialCircleLayer
 from .original_models import VArgs
 
 
-class EVSPCModel(Model, BaseSocialCircleModel):
+class VSCPlusModel(Model, BaseSocialCircleModel):
     """
-    E-V^2-Net-SPC
+    V^2-Net-SC+
     ---
-    `E-V^2-Net` Model with the InteractionCircle.
+    `V^2-Net` Model with SocialCircle+.
 
-    This model comes from "Another vertical view: A hierarchical network for 
-    heterogeneous trajectory prediction via spectrums".
+    This model comes from "View vertically: A hierarchical network for
+    trajectory prediction via fourier spectrums".
     Its original interaction-modeling part has been removed, and layers
     related to SocialCircle and PhysicalCircle are plugged in.
     Set the arg `--adaptive_fusion` when training this model to activate
@@ -59,7 +59,7 @@ class EVSPCModel(Model, BaseSocialCircleModel):
 
         # Trajectory encoding
         self.te = layers.TrajEncoding(self.dim, self.d//2,
-                                      torch.nn.ReLU,
+                                      torch.nn.Tanh,
                                       transform_layer=self.t1)
 
         # SocialCircle (meta components) layer
@@ -99,16 +99,6 @@ class EVSPCModel(Model, BaseSocialCircleModel):
         self.Tsteps_de, self.Tchannels_de = self.it1.Tshape
         self.Tsteps_en = max(self.Tsteps_en, self.sc_args.partitions)
 
-        # Bilinear structure (outer product + pooling + fc)
-        # For trajectories
-        self.outer = layers.OuterLayer(self.d//2, self.d//2)
-        self.pooling = layers.MaxPooling2D((2, 2))
-        self.flatten = layers.Flatten(axes_num=2)
-        self.outer_fc = layers.Dense((self.d//4)**2, self.d//2, torch.nn.Tanh)
-
-        # Noise encoding
-        self.ie = layers.TrajEncoding(self.d_id, self.d//2, torch.nn.Tanh)
-
         # Transformer is used as a feature extractor
         self.T = transformer.Transformer(
             num_layers=4,
@@ -127,6 +117,9 @@ class EVSPCModel(Model, BaseSocialCircleModel):
         # It is used to generate multiple predictions within one model implementation
         self.ms_fc = layers.Dense(self.d, self.v_args.Kc, torch.nn.Tanh)
         self.ms_conv = layers.GraphConv(self.d, self.d)
+
+        # Noise encoding
+        self.ie = layers.TrajEncoding(self.d_id, self.d//2, torch.nn.Tanh)
 
         # Decoder layers
         self.decoder_fc1 = layers.Dense(self.d, self.d, torch.nn.Tanh)
@@ -158,8 +151,8 @@ class EVSPCModel(Model, BaseSocialCircleModel):
         else:
             unprocessed_pos = torch.zeros_like(obs[..., -1:, :])
 
-        # Start computing the InteractionCircle
-        # InteractionCircle will be computed on each agent's 2D center point
+        # Start computing the SocialCircle+
+        # SocialCircle+ will be computed on each agent's 2D center point
         c_obs = self.picker.get_center(obs)[..., :2]
         c_nei = self.picker.get_center(nei)[..., :2]
         c_unpro_pos = self.picker.get_center(unprocessed_pos)[..., :2]
@@ -177,15 +170,11 @@ class EVSPCModel(Model, BaseSocialCircleModel):
         # Fuse SocialCircles and PhysicalCircles
         sp_circle = self.spc(social_circle, physical_circle)
 
-        # Encode the final InteractionCircle
+        # Encode the final SocialCircle+
         f_social = self.tse(sp_circle)      # (batch, steps, d/2)
 
-        # Trajectory embedding and encoding
-        f = self.te(obs)
-        f = self.outer(f, f)
-        f = self.pooling(f)
-        f = self.flatten(f)
-        f_traj = self.outer_fc(f)       # (batch, steps, d/2)
+        # feature embedding and encoding -> (batch, obs, d/2)
+        f_traj = self.te(obs)
 
         # Feature fusion
         f_traj = self.sc.pad(f_traj)
@@ -200,12 +189,12 @@ class EVSPCModel(Model, BaseSocialCircleModel):
         traj_targets = self.sc.pad(traj_targets)
 
         for _ in range(repeats):
-            # Assign random ids and embedding -> (batch, steps, d)
+            # Assign random ids and embedding -> (batch, steps, d/2)
             z = torch.normal(mean=0, std=1,
                              size=list(f_behavior.shape[:-1]) + [self.d_id])
             f_z = self.ie(z.to(obs.device))
 
-            # (batch, steps, 2*d)
+            # Transformer inputs -> (batch, steps, d)
             f_final = torch.concat([f_behavior, f_z], dim=-1)
 
             # Transformer outputs' shape is (batch, steps, d)
@@ -227,9 +216,8 @@ class EVSPCModel(Model, BaseSocialCircleModel):
             y = self.it1(y)
             all_predictions.append(y)
 
-        Y = torch.concat(all_predictions, dim=-3)   # (batch, K, n_key, dim)
-        return Y, sp_circle
+        return torch.concat(all_predictions, dim=-3)   # (batch, K, n_key, dim)
 
 
-class EVSPCStructure(Structure):
-    MODEL_TYPE = EVSPCModel
+class VSCPlusStructure(Structure):
+    MODEL_TYPE = VSCPlusModel

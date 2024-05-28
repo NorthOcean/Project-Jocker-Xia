@@ -1,8 +1,8 @@
 """
 @Author: Conghao Wong
-@Date: 2023-08-15 19:08:05
+@Date: 2023-08-15 20:30:51
 @LastEditors: Conghao Wong
-@LastEditTime: 2024-05-27 15:54:30
+@LastEditTime: 2024-05-28 10:28:57
 @Description: file content
 @Github: https://cocoon2wong.github.io
 @Copyright 2023 Conghao Wong, All Rights Reserved.
@@ -10,7 +10,7 @@
 
 import torch
 
-from qpid.constant import INPUT_TYPES
+from qpid.constant import INPUT_TYPES, PROCESS_TYPES
 from qpid.model import Model, layers, process, transformer
 from qpid.training import Structure
 
@@ -20,29 +20,35 @@ from .__layers import CircleFusionLayer, PhysicalCircleLayer, SocialCircleLayer
 from .original_models import VArgs
 
 
-class VSPCModel(Model, BaseSocialCircleModel):
+class TransformerSCPlusModel(Model, BaseSocialCircleModel):
     """
-    V^2-Net-SPC
+    Transformer-SC+
     ---
-    `V^2-Net` Model with the InteractionCircle.
-
-    This model comes from "View vertically: A hierarchical network for
-    trajectory prediction via fourier spectrums".
-    Its original interaction-modeling part has been removed, and layers
-    related to SocialCircle and PhysicalCircle are plugged in.
+    A simple Transformer-based trajectory prediction model.
+    It takes the SocialCircle to model social interactions, and the
+    PhysicalCircle to model interactions among agents and scene objects
+    (physical interactions).
     Set the arg `--adaptive_fusion` when training this model to activate
     the adaptive fusion strategy to fuse SocialCircle and PhysicalCircle.
+
+    NOTE:
+    - It has no keypoints-interpolation two-stage subnetworks;
+    - It contains only the Transformer backbone;
+    - It considers nothing about agents' multimodality.
     """
 
     def __init__(self, structure=None, *args, **kwargs):
         super().__init__(structure, *args, **kwargs)
 
         # Init args
-        self.args._set_default('K', 1)
-        self.args._set_default('K_train', 1)
+        self.args._set('output_pred_steps', 'all')
         self.v_args = self.args.register_subargs(VArgs, 'v_args')
+        self.v_args._set_default('T', 'none')
         self.sc_args = self.args.register_subargs(SocialCircleArgs, 'sc')
         self.pc_args = self.args.register_subargs(PhysicalCircleArgs, 'pc')
+
+        # Preprocess
+        self.set_preprocess(**{PROCESS_TYPES.MOVE: 0})
 
         # Set model inputs
         self.set_inputs(INPUT_TYPES.OBSERVED_TRAJ,
@@ -55,12 +61,15 @@ class VSPCModel(Model, BaseSocialCircleModel):
 
         # Transform layers
         self.t1 = tlayer((self.args.obs_frames, self.dim))
-        self.it1 = itlayer((len(self.output_pred_steps), self.dim))
+        self.it1 = itlayer((self.args.pred_frames, self.dim))
 
-        # Trajectory encoding
-        self.te = layers.TrajEncoding(self.dim, self.d//2,
-                                      torch.nn.Tanh,
-                                      transform_layer=self.t1)
+        # Trajectory embedding
+        if type(self.t1) == layers.transfroms.NoneTransformLayer:
+            self.te = layers.TrajEncoding(self.dim, self.d//2,
+                                          torch.nn.Tanh)
+        else:
+            self.te = layers.TrajEncoding(self.dim, self.d//2,
+                                          torch.nn.Tanh, self.t1)
 
         # SocialCircle (meta components) layer
         tslayer, _ = layers.get_transform_layers(self.sc_args.Ts)
@@ -72,7 +81,7 @@ class VSPCModel(Model, BaseSocialCircleModel):
                                     relative_velocity=self.sc_args.rel_speed,
                                     use_move_direction=self.sc_args.use_move_direction)
 
-        # PhysicalCircle (meta components) layer
+        # PhysicalCircle (meta-compinents) layer
         self.pc = PhysicalCircleLayer(partitions=self.sc_args.partitions,
                                       max_partitions=self.args.obs_frames,
                                       use_velocity=self.sc_args.use_velocity,
@@ -112,19 +121,15 @@ class VSPCModel(Model, BaseSocialCircleModel):
             include_top=False
         )
 
-        # Trainable adj matrix and gcn layer
-        # See our previous work "MSN: Multi-Style Network for Trajectory Prediction" for detail
-        # It is used to generate multiple predictions within one model implementation
-        self.ms_fc = layers.Dense(self.d, self.v_args.Kc, torch.nn.Tanh)
+        self.ms_fc = layers.Dense(self.d, self.Tsteps_de, torch.nn.Tanh)
         self.ms_conv = layers.GraphConv(self.d, self.d)
 
         # Noise encoding
         self.ie = layers.TrajEncoding(self.d_id, self.d//2, torch.nn.Tanh)
 
         # Decoder layers
-        self.decoder_fc1 = layers.Dense(self.d, self.d, torch.nn.Tanh)
-        self.decoder_fc2 = layers.Dense(self.d,
-                                        self.Tsteps_de * self.Tchannels_de)
+        self.decoder_fc1 = layers.Dense(self.d, 2*self.d, torch.nn.Tanh)
+        self.decoder_fc2 = layers.Dense(2*self.d, self.Tchannels_de)
 
     def forward(self, inputs: list[torch.Tensor], training=None, *args, **kwargs):
         # Unpack inputs
@@ -151,8 +156,8 @@ class VSPCModel(Model, BaseSocialCircleModel):
         else:
             unprocessed_pos = torch.zeros_like(obs[..., -1:, :])
 
-        # Start computing the InteractionCircle
-        # InteractionCircle will be computed on each agent's 2D center point
+        # Start computing the SocialCircle+
+        # SocialCircle will be computed on each agent's center point
         c_obs = self.picker.get_center(obs)[..., :2]
         c_nei = self.picker.get_center(nei)[..., :2]
         c_unpro_pos = self.picker.get_center(unprocessed_pos)[..., :2]
@@ -170,10 +175,10 @@ class VSPCModel(Model, BaseSocialCircleModel):
         # Fuse SocialCircles and PhysicalCircles
         sp_circle = self.spc(social_circle, physical_circle)
 
-        # Encode the final InteractionCircle
-        f_social = self.tse(sp_circle)      # (batch, steps, d/2)
+        # Encode the final SocialCircle+
+        f_social = self.tse(sp_circle)    # (batch, steps, d/2)
 
-        # feature embedding and encoding -> (batch, obs, d/2)
+        # feature embedding and encoding -> (batch, obs, d)
         f_traj = self.te(obs)
 
         # Feature fusion
@@ -183,7 +188,7 @@ class VSPCModel(Model, BaseSocialCircleModel):
 
         # Sampling random noise vectors
         all_predictions = []
-        repeats = self.args.K_train if training else self.args.K
+        repeats = 1
 
         traj_targets = self.t1(obs)
         traj_targets = self.sc.pad(traj_targets)
@@ -202,22 +207,19 @@ class VSPCModel(Model, BaseSocialCircleModel):
                                targets=traj_targets,
                                training=training)
 
-            # Multiple generations -> (batch, Kc, d)
-            adj = self.ms_fc(f_final)               # (batch, steps, Kc)
+            # Generations -> (batch, pred_steps, d)
+            adj = self.ms_fc(f_final)
             adj = torch.transpose(adj, -1, -2)
-            f_multi = self.ms_conv(f_tran, adj)     # (batch, Kc, d)
+            f_multi = self.ms_conv(f_tran, adj)     # (batch, pred_steps, d)
 
-            # Forecast keypoints -> (..., Kc, Tsteps_Key, Tchannels)
             y = self.decoder_fc1(f_multi)
             y = self.decoder_fc2(y)
-            y = torch.reshape(y, list(y.shape[:-1]) +
-                              [self.Tsteps_de, self.Tchannels_de])
 
             y = self.it1(y)
             all_predictions.append(y)
 
-        return torch.concat(all_predictions, dim=-3)   # (batch, K, n_key, dim)
+        return torch.concat(all_predictions, dim=-3)   # (batch, 1, pred, dim)
 
 
-class VSPCStructure(Structure):
-    MODEL_TYPE = VSPCModel
+class TransformerSCPlusStructure(Structure):
+    MODEL_TYPE = TransformerSCPlusModel

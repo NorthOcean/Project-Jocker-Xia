@@ -2,7 +2,7 @@
 @Author: Conghao Wong
 @Date: 2023-08-15 19:08:05
 @LastEditors: Conghao Wong
-@LastEditTime: 2024-04-25 20:46:56
+@LastEditTime: 2024-05-28 10:29:35
 @Description: file content
 @Github: https://cocoon2wong.github.io
 @Copyright 2023 Conghao Wong, All Rights Reserved.
@@ -24,7 +24,7 @@ class VSCModel(Model, BaseSocialCircleModel):
     """
     V^2-Net-SC
     ---
-    `V^2-Net` Model with the InteractionCircle.
+    `V^2-Net` Model with the SocialCircle.
 
     This model comes from "View vertically: A hierarchical network for
     trajectory prediction via fourier spectrums".

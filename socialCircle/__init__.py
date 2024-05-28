@@ -13,13 +13,13 @@ import qpid as __qpid
 from . import original_models
 from .__args import PhysicalCircleArgs, SocialCircleArgs
 from .ev_sc import EVSCModel, EVSCStructure
-from .ev_spc import EVSPCModel, EVSPCStructure
+from .ev_scp import EVSCPlusModel, EVSCPlusStructure
 from .msn_sc import MSNSCModel, MSNSCStructure
 from .msn_scp import MSNSCPlusModel, MSNSCPlusStructure
 from .trans_sc import TransformerSCModel, TransformerSCStructure
-from .trans_spc import TransformerSPCModel, TransformerSPCStructure
+from .trans_scp import TransformerSCPlusModel, TransformerSCPlusStructure
 from .v_sc import VSCModel, VSCStructure
-from .v_spc import VSPCModel, VSPCStructure
+from .v_scp import VSCPlusModel, VSCPlusStructure
 
 # Add new args
 __qpid.register_new_args(SocialCircleArgs, 'SocialCircle Args')
@@ -36,15 +36,15 @@ __qpid.silverballers.register(
     transsc=[TransformerSCStructure, TransformerSCModel],
 
     # SocialCircle+ Models (SocialCircle + PhysicalCircle)
-    evspc=[EVSPCStructure, EVSPCModel],
-    vspc=[VSPCStructure, VSPCModel],
+    evspc=[EVSCPlusStructure, EVSCPlusModel],
+    vspc=[VSCPlusStructure, VSCPlusModel],
     msnspc=[MSNSCPlusStructure, MSNSCPlusModel],
-    transspc=[TransformerSPCStructure, TransformerSPCModel],
+    transspc=[TransformerSCPlusStructure, TransformerSCPlusModel],
 
-    evscp=[EVSPCStructure, EVSPCModel],
-    vscp=[VSPCStructure, VSPCModel],
+    evscp=[EVSCPlusStructure, EVSCPlusModel],
+    vscp=[VSCPlusStructure, VSCPlusModel],
     msnscp=[MSNSCPlusStructure, MSNSCPlusModel],
-    transscp=[TransformerSPCStructure, TransformerSPCModel],
+    transscp=[TransformerSCPlusStructure, TransformerSCPlusModel],
 )
 
 __qpid._log_mod_loaded(__package__)

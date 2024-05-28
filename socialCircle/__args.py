@@ -2,7 +2,7 @@
 @Author: Conghao Wong
 @Date: 2023-08-08 15:19:56
 @LastEditors: Conghao Wong
-@LastEditTime: 2024-05-27 15:52:43
+@LastEditTime: 2024-05-28 10:26:23
 @Description: file content
 @Github: https://cocoon2wong.github.io
 @Copyright 2023 Conghao Wong, All Rights Reserved.
@@ -94,8 +94,8 @@ class PhysicalCircleArgs(EmptyArgs):
     @property
     def adaptive_fusion(self) -> int:
         """
-        Choose whether to use the adaptive fusion strategy to fuse SocialCircles
-        and PhysicalCircles into InteractionCircles.
+        Choose whether to use the adaptive fusion strategy to fuse SocialCircle
+        and PhysicalCircle into the SocialCircle+.
         """
         return self._arg('adaptive_fusion', 0, argtype=STATIC)
 

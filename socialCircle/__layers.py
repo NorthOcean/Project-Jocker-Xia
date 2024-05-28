@@ -2,7 +2,7 @@
 @Author: Conghao Wong
 @Date: 2023-08-08 14:55:56
 @LastEditors: Conghao Wong
-@LastEditTime: 2024-05-27 15:59:04
+@LastEditTime: 2024-05-28 10:19:19
 @Description: file content
 @Github: https://cocoon2wong.github.io
 @Copyright 2023 Conghao Wong, All Rights Reserved.
@@ -368,7 +368,7 @@ class PhysicalCircleLayer(torch.nn.Module):
 class CircleFusionLayer(torch.nn.Module):
     """
     A layer to fuse SocialCircle and PhysicalCircle meta components,
-    i.e., to compute InteractionCircle meta components.
+    i.e., to compute SocialCircle+ meta components.
     """
 
     def __init__(self, sclayer: SocialCircleLayer,

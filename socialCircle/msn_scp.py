@@ -2,7 +2,7 @@
 @Author: Conghao Wong
 @Date: 2024-05-27 20:04:40
 @LastEditors: Conghao Wong
-@LastEditTime: 2024-05-27 20:21:30
+@LastEditTime: 2024-05-28 10:23:47
 @Github: https://cocoon2wong.github.io
 @Copyright 2024 Conghao Wong, All Rights Reserved.
 """
@@ -20,6 +20,17 @@ from .original_models import VArgs
 
 
 class MSNSCPlusModel(Model, BaseSocialCircleModel):
+    """
+    MSN-SC+
+    ---
+    `MSN` Model with SocialCircle+.
+
+    This model comes from "Msn: multi-style network for trajectory prediction".
+    Its original interaction-modeling part has been removed, and layers
+    related to SocialCircle and PhysicalCircle are plugged in.
+    Set the arg `--adaptive_fusion` when training this model to activate
+    the adaptive fusion strategy to fuse SocialCircle and PhysicalCircle.
+    """
 
     def __init__(self, structure=None, *args, **kwargs):
         super().__init__(structure, *args, **kwargs)
@@ -168,7 +179,7 @@ class MSNSCPlusModel(Model, BaseSocialCircleModel):
         # Fuse SocialCircles and PhysicalCircles
         sp_circle = self.spc(social_circle, physical_circle)
 
-        # Encode the final InteractionCircle
+        # Encode the final SocialCircle+
         f_social = self.tse(sp_circle)      # (batch, steps, d/2)
 
         # Traj embedding, out shape == (batch, obs, 64)

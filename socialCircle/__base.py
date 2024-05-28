@@ -2,7 +2,7 @@
 @Author: Conghao Wong
 @Date: 2023-08-08 15:57:43
 @LastEditors: Conghao Wong
-@LastEditTime: 2024-03-21 09:52:10
+@LastEditTime: 2024-05-28 10:19:04
 @Description: file content
 @Github: https://cocoon2wong.github.io
 @Copyright 2023 Conghao Wong, All Rights Reserved.
@@ -14,7 +14,7 @@ from qpid.base import BaseManager
 class BaseSocialCircleModel(BaseManager):
 
     def print_info(self, **kwargs):
-        info: dict = {'InteractionCircle Settings': None}
+        info: dict = {'SocialCircle+ Settings': None}
 
         if 'sc_args' in self.__dict__:
             factors = [item for item in ['velocity',
