@@ -2,7 +2,7 @@
 @Author: Conghao Wong
 @Date: 2024-05-27 19:44:36
 @LastEditors: Conghao Wong
-@LastEditTime: 2024-05-27 20:07:26
+@LastEditTime: 2024-05-28 09:05:20
 @Github: https://cocoon2wong.github.io
 @Copyright 2024 Conghao Wong, All Rights Reserved.
 """
@@ -38,7 +38,7 @@ class MSNSCModel(Model, BaseSocialCircleModel):
         self.sc_args = self.args.register_subargs(SocialCircleArgs, 'sc')
 
         self.structure: Structure
-        self.structure.metrics.set({loss.FDE: 0.0})
+        self.structure.metrics.set({loss.FDE: 1.0})
 
         # Set preprocesser
         preprocess = []

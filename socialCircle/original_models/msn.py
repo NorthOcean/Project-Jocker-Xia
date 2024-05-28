@@ -33,7 +33,7 @@ class MSNAlphaModel(Model):
         self.v_args._set('T', 'none')
 
         self.structure: Structure
-        self.structure.metrics.set({loss.FDE: 0.0})
+        self.structure.metrics.set({loss.FDE: 1.0})
 
         # Set preprocesser
         preprocess = []

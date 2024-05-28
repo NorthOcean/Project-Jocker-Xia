@@ -39,7 +39,7 @@ class MSNSCPlusModel(Model, BaseSocialCircleModel):
         self.pc_args = self.args.register_subargs(PhysicalCircleArgs, 'pc')
 
         self.structure: Structure
-        self.structure.metrics.set({loss.FDE: 0.0})
+        self.structure.metrics.set({loss.FDE: 1.0})
 
         # Set preprocesser
         preprocess = []
