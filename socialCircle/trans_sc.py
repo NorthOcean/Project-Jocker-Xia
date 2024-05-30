@@ -2,7 +2,7 @@
 @Author: Conghao Wong
 @Date: 2023-08-15 20:30:51
 @LastEditors: Conghao Wong
-@LastEditTime: 2024-04-25 20:47:28
+@LastEditTime: 2024-05-30 13:51:44
 @Description: file content
 @Github: https://cocoon2wong.github.io
 @Copyright 2023 Conghao Wong, All Rights Reserved.
@@ -108,16 +108,11 @@ class TransformerSCModel(Model, BaseSocialCircleModel):
 
     def forward(self, inputs: list[torch.Tensor], training=None, *args, **kwargs):
         # Unpack inputs
-        obs = inputs[0]
-        nei = inputs[1]
+        # (batch, obs, dim)
+        obs = self.get_input(inputs, INPUT_TYPES.OBSERVED_TRAJ)
 
-        # Start computing the SocialCircle
-        # SocialCircle will be computed on each agent's center point
-        c_obs = self.picker.get_center(obs)[..., :2]
-        c_nei = self.picker.get_center(nei)[..., :2]
-
-        # Compute and encode the SocialCircle
-        social_circle, f_direction = self.sc(c_obs, c_nei)
+        # Compute SocialCircle
+        social_circle = self.sc.implement(self, inputs)
         f_social = self.tse(social_circle)    # (batch, steps, d/2)
 
         # feature embedding and encoding -> (batch, obs, d)

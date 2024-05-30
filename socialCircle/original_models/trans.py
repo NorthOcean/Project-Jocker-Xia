@@ -2,7 +2,7 @@
 @Author: Beihao Xia
 @Date: 2023-03-20 16:15:25
 @LastEditors: Conghao Wong
-@LastEditTime: 2024-04-25 20:48:40
+@LastEditTime: 2024-05-29 21:04:31
 @Description: file content
 @Github: https://cocoon2wong.github.io
 @Copyright 2023 Beihao Xia, All Rights Reserved.
@@ -87,7 +87,8 @@ class MinimalVModel(Model):
 
     def forward(self, inputs, training=None, mask=None, *args, **kwargs):
         # Unpack inputs
-        obs = inputs[0]
+        # (batch, obs, dim)
+        obs = self.get_input(inputs, INPUT_TYPES.OBSERVED_TRAJ)
 
         # Feature embedding and encoding -> (batch, obs, d/2)
         f_traj = self.te(obs)

@@ -2,7 +2,7 @@
 @Author: Conghao Wong
 @Date: 2022-07-05 16:00:26
 @LastEditors: Conghao Wong
-@LastEditTime: 2024-04-25 20:48:24
+@LastEditTime: 2024-05-30 13:46:19
 @Description: First stage V^2-Net model.
 @Github: https://github.com/cocoon2wong
 @Copyright 2022 Conghao Wong, All Rights Reserved.
@@ -88,7 +88,8 @@ class VAModel(Model):
 
     def forward(self, inputs, training=None, mask=None, *args, **kwargs):
         # Unpack inputs
-        obs = inputs[0]     # (batch, obs, dim)
+        # (batch, obs, dim)
+        obs = self.get_input(inputs, INPUT_TYPES.OBSERVED_TRAJ)
 
         # Feature embedding and encoding -> (batch, obs, d/2)
         f_traj = self.te(obs)
@@ -145,6 +146,7 @@ class VBModel(Model):
     def __init__(self, structure=None, *args, **kwargs):
         super().__init__(structure, *args, **kwargs)
 
+        from qpid.mods import contextMaps
         from qpid.mods.contextMaps import ContextEncoding
 
         if self.args.model_type == 'frame-based':
@@ -158,8 +160,8 @@ class VBModel(Model):
         # Configs
         # GT in the inputs is only used when training
         self.set_inputs(INPUT_TYPES.OBSERVED_TRAJ,
-                        INPUT_TYPES.MAP,
-                        INPUT_TYPES.MAP_PARAS,
+                        contextMaps.INPUT_TYPES.MAP,
+                        contextMaps.INPUT_TYPES.MAP_PARAS,
                         INPUT_TYPES.GROUNDTRUTH_TRAJ)
         self.set_labels(INPUT_TYPES.GROUNDTRUTH_TRAJ)
 

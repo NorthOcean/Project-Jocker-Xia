@@ -2,13 +2,13 @@
 @Author: Conghao Wong
 @Date: 2023-08-08 15:52:46
 @LastEditors: Conghao Wong
-@LastEditTime: 2024-05-27 20:19:31
+@LastEditTime: 2024-05-30 10:53:52
 @Description: file content
 @Github: https://cocoon2wong.github.io
 @Copyright 2023 Conghao Wong, All Rights Reserved.
 """
 
-import qpid as __qpid
+import qpid as qpid
 
 from . import original_models
 from .__args import PhysicalCircleArgs, SocialCircleArgs
@@ -22,13 +22,14 @@ from .v_sc import VSCModel, VSCStructure
 from .v_scp import VSCPlusModel, VSCPlusStructure
 
 # Add new args
-__qpid.register_new_args(SocialCircleArgs, 'SocialCircle Args')
-__qpid.register_new_args(PhysicalCircleArgs, 'PhysicalCircle Args')
-__qpid.args.add_arg_alias(['--sc', '-sc', '--socialCircle'],
-                          ['--model', 'MKII', '-lb', 'speed', '-la'])
+qpid.register_args(SocialCircleArgs, 'SocialCircle Args')
+qpid.register_args(PhysicalCircleArgs, 'PhysicalCircle Args')
+qpid.add_arg_alias(alias=['--sc', '-sc', '--socialCircle'],
+                   command=['--model', 'MKII', '--loads'],
+                   pattern='{},speed')
 
 # Register Circle-based models
-__qpid.silverballers.register(
+qpid.register(
     # SocialCircle Models
     evsc=[EVSCStructure, EVSCModel],
     vsc=[VSCStructure, VSCModel],
@@ -46,5 +47,3 @@ __qpid.silverballers.register(
     msnscp=[MSNSCPlusStructure, MSNSCPlusModel],
     transscp=[TransformerSCPlusStructure, TransformerSCPlusModel],
 )
-
-__qpid._log_mod_loaded(__package__)

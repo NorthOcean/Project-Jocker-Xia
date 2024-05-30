@@ -2,7 +2,7 @@
 @Author: Conghao Wong
 @Date: 2022-09-13 21:18:29
 @LastEditors: Conghao Wong
-@LastEditTime: 2024-05-27 20:07:40
+@LastEditTime: 2024-05-30 13:48:19
 @Description: file content
 @Github: https://github.com/cocoon2wong
 @Copyright 2022 Conghao Wong, All Rights Reserved.
@@ -22,6 +22,7 @@ class MSNAlphaModel(Model):
     def __init__(self, structure=None, *args, **kwargs):
         super().__init__(structure, *args, **kwargs)
 
+        from qpid.mods import contextMaps
         from qpid.mods.contextMaps.settings import (MAP_HALF_SIZE,
                                                     POOLING_BEFORE_SAVING)
 
@@ -46,7 +47,8 @@ class MSNAlphaModel(Model):
         self.set_preprocess(*preprocess, **{PROCESS_TYPES.MOVE: 0})
 
         # Set model inputs
-        self.set_inputs(INPUT_TYPES.OBSERVED_TRAJ, INPUT_TYPES.MAP)
+        self.set_inputs(INPUT_TYPES.OBSERVED_TRAJ,
+                        contextMaps.INPUT_TYPES.MAP)
 
         # Map parameters
         self.MAP_HALF_SIZE = MAP_HALF_SIZE
@@ -88,9 +90,11 @@ class MSNAlphaModel(Model):
         self.decoder = layers.Dense(128, 2)
 
     def forward(self, inputs: list[torch.Tensor], training=None, *args, **kwargs):
+        from qpid.mods import contextMaps
+
         # Unpack inputs
         obs = self.get_input(inputs, INPUT_TYPES.OBSERVED_TRAJ)
-        maps = self.get_input(inputs, INPUT_TYPES.MAP)
+        maps = self.get_input(inputs, contextMaps.INPUT_TYPES.MAP)
 
         # Traj embedding, out shape == (batch, obs, 64)
         f_traj = self.pos_embedding(obs)

@@ -2,7 +2,7 @@
 @Author: Conghao Wong
 @Date: 2023-07-12 17:38:42
 @LastEditors: Conghao Wong
-@LastEditTime: 2024-05-06 17:12:20
+@LastEditTime: 2024-05-30 13:54:03
 @Description: file content
 @Github: https://cocoon2wong.github.io
 @Copyright 2023 Conghao Wong, All Rights Reserved.
@@ -23,20 +23,21 @@ from utils import TK_BORDER_WIDTH, TK_TITLE_STYLE, TextboxHandler
 sys.path.insert(0, os.path.abspath('.'))
 
 import qpid
+import socialCircle
 from main import main
 from qpid.constant import DATASET_CONFIGS, INPUT_TYPES
 from qpid.dataset.agent_based import Agent
-from qpid.mods import vis
+from qpid.mods import segMaps, vis
 from qpid.utils import dir_check, get_mask, get_relative_path, move_to_device
 
 OBS = INPUT_TYPES.OBSERVED_TRAJ
 NEI = INPUT_TYPES.NEIGHBOR_TRAJ
-SEG = INPUT_TYPES.SEG_MAP
+SEG = segMaps.INPUT_TYPES.SEG_MAP
 
 DATASET = 'ETH-UCY'
 SPLIT = 'zara1'
 CLIP = 'zara1'
-MODEL_PATH = 'weights/Silverbullet-Torch/evsczara1_vis'
+MODEL_PATH = 'linear'
 
 TEMP_IMG_PATH = './temp_files/socialcircle_toy_example/fig.png'
 TEMP_RGB_IMG_PATH = './temp_files/socialcircle_toy_example/fig_rgb.png'
@@ -128,6 +129,9 @@ class SocialCircleToy():
 
         # Create model(s)
         self.t.create_model()
+        if not INPUT_TYPES.NEIGHBOR_TRAJ in self.t.model.input_types:
+            self.t.model.input_types.append(INPUT_TYPES.NEIGHBOR_TRAJ)
+
         old_input_types = self.input_types
         self.input_types = (self.t.model.input_types,
                             self.t.args.obs_frames,
@@ -160,8 +164,7 @@ class SocialCircleToy():
             self.t.args._set_default('force_split', SPLIT)
             self.t.args._set_default('force_clip', CLIP)
             self.init_model()
-            self.t.log(
-                f'Model `{t.model.s_args.loada}` and dataset files ({CLIP}) loaded.')
+            self.t.log(f'Model `{t.model.name}` and dataset ({CLIP}) loaded.')
         except Exception as e:
             print(e)
 
@@ -646,10 +649,10 @@ if __name__ == '__main__':
 
     qpid.set_log_path(LOG_PATH)
     qpid.set_log_stream_handler(TextboxHandler(logbar))
-    qpid.args.add_arg_alias(['-sdd', '-SDD'],
-                            ['--force_dataset', 'SDD',
-                             '--force_split', 'sdd',
-                             '--force_clip'])
+    qpid.add_arg_alias(['-sdd', '-SDD'],
+                       ['--force_dataset', 'SDD',
+                        '--force_split', 'sdd',
+                        '--force_clip'])
     toy = SocialCircleToy(args(MODEL_PATH))
 
     """
@@ -732,7 +735,7 @@ if __name__ == '__main__':
         column=0, row=11, sticky=tk.N)
 
     tk.Button(BF, text='Reload Model Weights',
-              command=lambda: [toy.load_model(args(p := filedialog.askdirectory(initialdir=os.path.dirname(MODEL_PATH)))),
+              command=lambda: [toy.load_model(args(p := filedialog.askdirectory(initialdir='./'))),
                                model_path.config(text=p)]).grid(
         column=0, row=12, sticky=tk.N)
 

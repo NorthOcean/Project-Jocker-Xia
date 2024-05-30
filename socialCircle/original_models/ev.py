@@ -2,7 +2,7 @@
 @Author: Conghao Wong
 @Date: 2024-03-20 10:12:55
 @LastEditors: Conghao Wong
-@LastEditTime: 2024-04-25 20:49:00
+@LastEditTime: 2024-05-29 21:04:17
 @Description: file content
 @Github: https://cocoon2wong.github.io
 @Copyright 2024 Conghao Wong, All Rights Reserved.
@@ -101,7 +101,8 @@ class EVModel(Model):
         """
 
         # Unpack inputs
-        obs = inputs[0]     # (batch, obs, dim)
+        # (batch, obs, dim)
+        obs = self.get_input(inputs, INPUT_TYPES.OBSERVED_TRAJ)
 
         # Trajectory embedding and encoding
         f = self.te(obs)

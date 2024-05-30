@@ -2,7 +2,7 @@
 @Author: Conghao Wong
 @Date: 2023-08-08 14:55:56
 @LastEditors: Conghao Wong
-@LastEditTime: 2024-05-28 10:19:19
+@LastEditTime: 2024-05-30 13:49:26
 @Description: file content
 @Github: https://cocoon2wong.github.io
 @Copyright 2023 Conghao Wong, All Rights Reserved.
@@ -11,8 +11,11 @@
 import numpy as np
 import torch
 
-from qpid.model import layers
+from qpid.constant import INPUT_TYPES
+from qpid.model import Model, layers, process
 from qpid.utils import get_mask
+
+from .__args import PhysicalCircleArgs
 
 NORMALIZED_SIZE = None
 
@@ -153,7 +156,27 @@ class SocialCircleLayer(torch.nn.Module):
         social_circle = torch.stack(social_circle)
         social_circle = torch.permute(social_circle, [2, 0, 1])
         social_circle = self.pad(social_circle)
-        return social_circle, f_direction
+        return social_circle
+
+    def implement(self, model: Model, inputs: list[torch.Tensor]):
+        """
+        Compute the SocialCircle from original model inputs.
+        """
+        # Unpack inputs
+        # (batch, obs, dim)
+        obs = model.get_input(inputs, INPUT_TYPES.OBSERVED_TRAJ)
+
+        # (batch, a:=max_agents, obs, dim)
+        nei = model.get_input(inputs, INPUT_TYPES.NEIGHBOR_TRAJ)
+
+        # Start computing the SocialCircle
+        # SocialCircle will be computed on each agent's center point
+        c_obs = model.picker.get_center(obs)[..., :2]
+        c_nei = model.picker.get_center(nei)[..., :2]
+
+        # Compute and encode the SocialCircle
+        social_circle = self(c_obs, c_nei)
+        return social_circle
 
     def pad(self, input: torch.Tensor):
         """
@@ -340,6 +363,49 @@ class PhysicalCircleLayer(torch.nn.Module):
             pc = torch.nn.functional.pad(pc, paddings)
 
         return pc
+
+    def implement(self, model: Model, inputs: list[torch.Tensor]):
+        """
+        Compute the Physical from original model inputs.
+        """
+        from qpid.mods import segMaps
+
+        # Unpack inputs
+        # (batch, obs, dim)
+        obs = model.get_input(inputs, INPUT_TYPES.OBSERVED_TRAJ)
+
+        # Segmentaion-map-related inputs (to compute the PhysicalCircle)
+        # (batch, h, w)
+        seg_maps = model.get_input(inputs, segMaps.INPUT_TYPES.SEG_MAP)
+
+        # (batch, 4)
+        seg_map_paras = model.get_input(
+            inputs, segMaps.INPUT_TYPES.SEG_MAP_PARAS)
+
+        # Process model inputs
+        pc_args = model.args.register_subargs(PhysicalCircleArgs, 'pc')
+        if pc_args.use_empty_seg_maps:
+            seg_maps = torch.zeros_like(seg_maps)
+
+        # Get unprocessed positions from the `MOVE` layer
+        if (m_layer := model.processor.get_layer_by_type(process.Move)):
+            unprocessed_pos = m_layer.ref_points
+        else:
+            unprocessed_pos = torch.zeros_like(obs[..., -1:, :])
+
+        # Start computing the PhysicalCircle
+        # PhysicalCircle will be computed on each agent's 2D center point
+        c_obs = model.picker.get_center(obs)[..., :2]
+        c_unpro_pos = model.picker.get_center(unprocessed_pos)[..., :2]
+
+        # Compute PhysicalCircle meta components
+        physical_circle = self(seg_maps, seg_map_paras, c_obs, c_unpro_pos)
+
+        # Rotate the PhysicalCircle (if needed)
+        if (r_layer := model.processor.get_layer_by_type(process.Rotate)):
+            physical_circle = self.rotate(physical_circle, r_layer.angles)
+
+        return physical_circle
 
     def rotate(self, circle: torch.Tensor, angles: torch.Tensor) -> torch.Tensor:
         """

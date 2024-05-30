@@ -2,7 +2,7 @@
 @Author: Conghao Wong
 @Date: 2024-05-27 20:04:40
 @LastEditors: Conghao Wong
-@LastEditTime: 2024-05-28 10:23:47
+@LastEditTime: 2024-05-30 13:01:08
 @Github: https://cocoon2wong.github.io
 @Copyright 2024 Conghao Wong, All Rights Reserved.
 """
@@ -10,7 +10,7 @@
 import torch
 
 from qpid.constant import INPUT_TYPES, PROCESS_TYPES
-from qpid.model import Model, layers, process, transformer
+from qpid.model import Model, layers, transformer
 from qpid.training import Structure, loss
 
 from .__args import PhysicalCircleArgs, SocialCircleArgs
@@ -35,6 +35,7 @@ class MSNSCPlusModel(Model, BaseSocialCircleModel):
     def __init__(self, structure=None, *args, **kwargs):
         super().__init__(structure, *args, **kwargs)
 
+        from qpid.mods import contextMaps, segMaps
         from qpid.mods.contextMaps.settings import (MAP_HALF_SIZE,
                                                     POOLING_BEFORE_SAVING)
 
@@ -64,10 +65,10 @@ class MSNSCPlusModel(Model, BaseSocialCircleModel):
 
         # Set model inputs
         self.set_inputs(INPUT_TYPES.OBSERVED_TRAJ,
-                        INPUT_TYPES.MAP,
+                        contextMaps.INPUT_TYPES.MAP,
                         INPUT_TYPES.NEIGHBOR_TRAJ,
-                        INPUT_TYPES.SEG_MAP,
-                        INPUT_TYPES.SEG_MAP_PARAS)
+                        segMaps.INPUT_TYPES.SEG_MAP,
+                        segMaps.INPUT_TYPES.SEG_MAP_PARAS)
 
         # Map parameters
         self.MAP_HALF_SIZE = MAP_HALF_SIZE
@@ -140,41 +141,15 @@ class MSNSCPlusModel(Model, BaseSocialCircleModel):
         self.decoder = layers.Dense(128, 2)
 
     def forward(self, inputs, training=None, mask=None, *args, **kwargs):
+        from qpid.mods import contextMaps
+
         # Unpack inputs
         obs = self.get_input(inputs, INPUT_TYPES.OBSERVED_TRAJ)
-        maps = self.get_input(inputs, INPUT_TYPES.MAP)
+        maps = self.get_input(inputs, contextMaps.INPUT_TYPES.MAP)
 
-        # (batch, a:=max_agents, obs, dim)
-        nei = self.get_input(inputs, INPUT_TYPES.NEIGHBOR_TRAJ)
-
-        # Segmentaion-map-related inputs (to compute the PhysicalCircle)
-        # (batch, h, w)
-        seg_maps = self.get_input(inputs, INPUT_TYPES.SEG_MAP)
-
-        # (batch, 4)
-        seg_map_paras = self.get_input(inputs, INPUT_TYPES.SEG_MAP_PARAS)
-
-        # Process model inputs
-        if self.pc_args.use_empty_seg_maps:
-            seg_maps = torch.zeros_like(seg_maps)
-
-        # Get unprocessed positions from the `MOVE` layer
-        if (m_layer := self.processor.get_layer_by_type(process.Move)):
-            unprocessed_pos = m_layer.ref_points
-        else:
-            unprocessed_pos = torch.zeros_like(obs[..., -1:, :])
-
-        # Start computing the SocialCircle+
-        # Compute SocialCircle meta components
-        social_circle, _ = self.sc(obs, nei)
-
-        # Compute PhysicalCircle meta components
-        physical_circle = self.pc(
-            seg_maps, seg_map_paras, obs, unprocessed_pos)
-
-        # Rotate the PhysicalCircle (if needed)
-        if (r_layer := self.processor.get_layer_by_type(process.Rotate)):
-            physical_circle = self.pc.rotate(physical_circle, r_layer.angles)
+        # Compute SocialCircle and PhysicalCircle
+        social_circle = self.sc.implement(self, inputs)
+        physical_circle = self.pc.implement(self, inputs)
 
         # Fuse SocialCircles and PhysicalCircles
         sp_circle = self.spc(social_circle, physical_circle)

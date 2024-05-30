@@ -2,7 +2,7 @@
 @Author: Conghao Wong
 @Date: 2023-11-07 16:51:07
 @LastEditors: Conghao Wong
-@LastEditTime: 2024-05-28 10:27:50
+@LastEditTime: 2024-05-30 13:50:31
 @Description: file content
 @Github: https://cocoon2wong.github.io
 @Copyright 2023 Conghao Wong, All Rights Reserved.
@@ -11,7 +11,7 @@
 import torch
 
 from qpid.constant import INPUT_TYPES
-from qpid.model import Model, layers, process, transformer
+from qpid.model import Model, layers, transformer
 from qpid.training import Structure
 
 from .__args import PhysicalCircleArgs, SocialCircleArgs
@@ -37,6 +37,8 @@ class EVSCPlusModel(Model, BaseSocialCircleModel):
     def __init__(self, structure=None, *args, **kwargs):
         super().__init__(structure, *args, **kwargs)
 
+        from qpid.mods import segMaps
+
         # Init args
         self.args._set_default('K', 1)
         self.args._set_default('K_train', 1)
@@ -47,8 +49,8 @@ class EVSCPlusModel(Model, BaseSocialCircleModel):
         # Set model inputs
         self.set_inputs(INPUT_TYPES.OBSERVED_TRAJ,
                         INPUT_TYPES.NEIGHBOR_TRAJ,
-                        INPUT_TYPES.SEG_MAP,
-                        INPUT_TYPES.SEG_MAP_PARAS)
+                        segMaps.INPUT_TYPES.SEG_MAP,
+                        segMaps.INPUT_TYPES.SEG_MAP_PARAS)
 
         # Layers
         tlayer, itlayer = layers.get_transform_layers(self.v_args.T)
@@ -138,41 +140,9 @@ class EVSCPlusModel(Model, BaseSocialCircleModel):
         # (batch, obs, dim)
         obs = self.get_input(inputs, INPUT_TYPES.OBSERVED_TRAJ)
 
-        # (batch, a:=max_agents, obs, dim)
-        nei = self.get_input(inputs, INPUT_TYPES.NEIGHBOR_TRAJ)
-
-        # Segmentaion-map-related inputs (to compute the PhysicalCircle)
-        # (batch, h, w)
-        seg_maps = self.get_input(inputs, INPUT_TYPES.SEG_MAP)
-
-        # (batch, 4)
-        seg_map_paras = self.get_input(inputs, INPUT_TYPES.SEG_MAP_PARAS)
-
-        # Process model inputs
-        if self.pc_args.use_empty_seg_maps:
-            seg_maps = torch.zeros_like(seg_maps)
-
-        # Get unprocessed positions from the `MOVE` layer
-        if (m_layer := self.processor.get_layer_by_type(process.Move)):
-            unprocessed_pos = m_layer.ref_points
-        else:
-            unprocessed_pos = torch.zeros_like(obs[..., -1:, :])
-
-        # Start computing the SocialCircle+
-        # SocialCircle+ will be computed on each agent's 2D center point
-        c_obs = self.picker.get_center(obs)[..., :2]
-        c_nei = self.picker.get_center(nei)[..., :2]
-        c_unpro_pos = self.picker.get_center(unprocessed_pos)[..., :2]
-
-        # Compute SocialCircle meta components
-        social_circle, _ = self.sc(c_obs, c_nei)
-
-        # Compute PhysicalCircle meta components
-        physical_circle = self.pc(seg_maps, seg_map_paras, c_obs, c_unpro_pos)
-
-        # Rotate the PhysicalCircle (if needed)
-        if (r_layer := self.processor.get_layer_by_type(process.Rotate)):
-            physical_circle = self.pc.rotate(physical_circle, r_layer.angles)
+        # Compute SocialCircle and PhysicalCircle
+        social_circle = self.sc.implement(self, inputs)
+        physical_circle = self.pc.implement(self, inputs)
 
         # Fuse SocialCircles and PhysicalCircles
         sp_circle = self.spc(social_circle, physical_circle)

@@ -2,7 +2,7 @@
 @Author: Conghao Wong
 @Date: 2024-05-27 19:44:36
 @LastEditors: Conghao Wong
-@LastEditTime: 2024-05-28 09:05:20
+@LastEditTime: 2024-05-30 13:37:22
 @Github: https://cocoon2wong.github.io
 @Copyright 2024 Conghao Wong, All Rights Reserved.
 """
@@ -24,6 +24,7 @@ class MSNSCModel(Model, BaseSocialCircleModel):
     def __init__(self, structure=None, *args, **kwargs):
         super().__init__(structure, *args, **kwargs)
 
+        from qpid.mods import contextMaps
         from qpid.mods.contextMaps.settings import (MAP_HALF_SIZE,
                                                     POOLING_BEFORE_SAVING)
 
@@ -52,7 +53,7 @@ class MSNSCModel(Model, BaseSocialCircleModel):
 
         # Set model inputs
         self.set_inputs(INPUT_TYPES.OBSERVED_TRAJ,
-                        INPUT_TYPES.MAP,
+                        contextMaps.INPUT_TYPES.MAP,
                         INPUT_TYPES.NEIGHBOR_TRAJ)
 
         # Map parameters
@@ -111,16 +112,17 @@ class MSNSCModel(Model, BaseSocialCircleModel):
         self.decoder = layers.Dense(128, 2)
 
     def forward(self, inputs, training=None, mask=None, *args, **kwargs):
+        from qpid.mods import contextMaps
+
         # Unpack inputs
         obs = self.get_input(inputs, INPUT_TYPES.OBSERVED_TRAJ)
-        maps = self.get_input(inputs, INPUT_TYPES.MAP)
-        nei = self.get_input(inputs, INPUT_TYPES.NEIGHBOR_TRAJ)
+        maps = self.get_input(inputs, contextMaps.INPUT_TYPES.MAP)
 
         # Traj embedding, out shape == (batch, obs, 64)
         f_traj = self.pos_embedding(obs)
 
-        # Start computing the SocialCircle
-        social_circle, _ = self.sc(obs, nei)
+        # Compute SocialCircle
+        social_circle = self.sc.implement(self, inputs)
         f_social = self.tse(social_circle)      # (batch, obs, 64)
 
         # Feature fusion

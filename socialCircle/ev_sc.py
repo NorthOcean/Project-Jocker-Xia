@@ -2,7 +2,7 @@
 @Author: Conghao Wong
 @Date: 2024-03-20 16:52:02
 @LastEditors: Conghao Wong
-@LastEditTime: 2024-04-25 20:48:10
+@LastEditTime: 2024-05-30 13:38:22
 @Description: file content
 @Github: https://cocoon2wong.github.io
 @Copyright 2024 Conghao Wong, All Rights Reserved.
@@ -107,16 +107,8 @@ class EVSCModel(Model, BaseSocialCircleModel):
         # (batch, obs, dim)
         obs = self.get_input(inputs, INPUT_TYPES.OBSERVED_TRAJ)
 
-        # (batch, a:=max_agents, obs, dim)
-        nei = self.get_input(inputs, INPUT_TYPES.NEIGHBOR_TRAJ)
-
-        # Start computing the SocialCircle
-        # SocialCircle will be computed on each agent's center point
-        c_obs = self.picker.get_center(obs)[..., :2]
-        c_nei = self.picker.get_center(nei)[..., :2]
-
-        # Compute and encode the SocialCircle
-        social_circle, f_direction = self.sc(c_obs, c_nei)
+        # Compute SocialCircle
+        social_circle = self.sc.implement(self, inputs)
         f_social = self.tse(social_circle)    # (batch, steps, d/2)
 
         # Trajectory embedding and encoding
@@ -167,7 +159,7 @@ class EVSCModel(Model, BaseSocialCircleModel):
             all_predictions.append(y)
 
         Y = torch.concat(all_predictions, dim=-3)   # (batch, K, n_key, dim)
-        return Y, social_circle, f_direction
+        return Y, social_circle
 
 
 class EVSCStructure(Structure):
