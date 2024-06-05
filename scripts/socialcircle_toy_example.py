@@ -2,7 +2,7 @@
 @Author: Conghao Wong
 @Date: 2023-07-12 17:38:42
 @LastEditors: Conghao Wong
-@LastEditTime: 2024-06-05 15:54:32
+@LastEditTime: 2024-06-05 16:11:45
 @Description: file content
 @Github: https://cocoon2wong.github.io
 @Copyright 2023 Conghao Wong, All Rights Reserved.
@@ -25,6 +25,7 @@ sys.path.insert(0, os.path.abspath('.'))
 import qpid
 import socialCircle
 from main import main
+from qpid.args import TEMPORARY, EmptyArgs
 from qpid.constant import DATASET_CONFIGS, INPUT_TYPES
 from qpid.dataset.agent_based import Agent
 from qpid.mods import segMaps, vis
@@ -58,10 +59,36 @@ MARKER_CIRCLE_RADIUS = 3
 MARKER_RADIUS = 5
 MARKER_TAG = 'indicator'
 
-THREE_POINTS_FALG = '--threepoints'
-DRAW_SEG_MAP_FLAG = '--draw_seg_map'
 
 dir_check(os.path.dirname(LOG_PATH))
+
+
+class ToyArgs(EmptyArgs):
+
+    @property
+    def draw_seg_map(self) -> int:
+        """
+        Choose whether to draw segmentation maps on the canvas.
+        """
+        return self._arg('draw_seg_map', 0, TEMPORARY)
+    
+    @property
+    def points(self) -> int:
+        """
+        The number of points to simulate the trajectory of manual
+        neighbor. It only accepts `2` or `3`
+        """
+        return self._arg('points', 2, TEMPORARY)
+    
+    @property
+    def lite(self) -> int:
+        """
+        Choose whether to show the lite version of tk window.
+        """
+        return self._arg('lite', 0, TEMPORARY)
+    
+
+qpid.register_args(ToyArgs, 'Toy Example Args')
 
 
 class SocialCircleToy():
@@ -81,6 +108,9 @@ class SocialCircleToy():
         self.input_and_gt: list[list[torch.Tensor]] | None = None
         self.input_types = None
 
+        # Args
+        self.args = ToyArgs(sys.argv)
+
         # Settings
         self.draw_mode_count = 0
         self.click_count = 0
@@ -94,17 +124,12 @@ class SocialCircleToy():
         self.load_model(args)
 
         # The maximum number of manual agents
-        self.mpoints = 3 if THREE_POINTS_FALG in sys.argv else 2
         self.interp_model = None
-
-        # Whether to draw seg maps
-        self.draw_seg_map = True if DRAW_SEG_MAP_FLAG in sys.argv else False
-        self.seg_map = None
 
         # TK variables
         self.tk_vars: dict[str, tk.StringVar] = {}
         self.tk_vars['agent_id'] = tk.StringVar(value='0')
-        for p in range(self.mpoints):
+        for p in range(self.args.points):
             for i in ['x', 'y']:
                 self.tk_vars[f'p{i}{p}'] = tk.StringVar()
 
@@ -439,7 +464,7 @@ class SocialCircleToy():
                 pass
 
         elif self.click_count == 1:
-            if self.mpoints == 3 and self.draw_mode == DRAW_MODE_QPID:
+            if self.args.points == 3 and self.draw_mode == DRAW_MODE_QPID:
                 draw_indicator(canvas, x, y, 'orange', text='MIDDLE')
                 self.click_count = 2
             else:
@@ -524,7 +549,7 @@ class SocialCircleToy():
 
         # Draw segmentation map
         if self.draw_mode == DRAW_MODE_QPID_PHYSICAL:
-            if ((self.draw_seg_map) and 
+            if ((self.args.draw_seg_map) and 
                 (self.image) and
                 (self.inputs is not None) and 
                 (SEG in self.t.model.input_types)):
@@ -620,7 +645,6 @@ if __name__ == '__main__':
 
     root = tk.Tk()
     root.title('Toy Example of SocialCircle Models')
-    verbose = False if '--lite' in sys.argv else True
 
     """
     Configs
@@ -691,7 +715,7 @@ if __name__ == '__main__':
     # Left part
     i_l = -1
 
-    if verbose:
+    if not toy.args.lite:
         tk.Label(LF, text='Settings', **TK_TITLE_STYLE, **l_args).grid(
             column=0, row=(i_l := i_l + 1), sticky=tk.W)
 
@@ -733,7 +757,7 @@ if __name__ == '__main__':
     angles = tk.Label(RF, width=60, **r_args, **t_args)
     canvas = tk.Canvas(RF, width=MAX_WIDTH, height=MAX_HEIGHT, **r_args)
 
-    if verbose:
+    if not toy.args.lite:
         tk.Label(RF, text='Predictions', **TK_TITLE_STYLE, **r_args, **t_args).grid(
             column=0, row=(i_r := i_r + 1), sticky=tk.W)
 

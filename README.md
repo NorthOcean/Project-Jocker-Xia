@@ -257,4 +257,16 @@ About the `argtype`:
 - `--draw_on_empty_canvas`: type=`int`, argtype=`temporary`.
   Controls whether to draw visualized results on the empty canvas instead of the actual video. 
   The default value is `0`.
+
+### Toy Example Args
+
+- `--draw_seg_map`: type=`int`, argtype=`temporary`.
+  Choose whether to draw segmentation maps on the canvas. 
+  The default value is `0`.
+- `--lite`: type=`int`, argtype=`temporary`.
+  Choose whether to show the lite version of tk window. 
+  The default value is `0`.
+- `--points`: type=`int`, argtype=`temporary`.
+  The number of points to simulate the trajectory of manual neighbor. It only accepts `2` or `3` 
+  The default value is `2`.
 <!-- DO NOT CHANGE THIS LINE -->
