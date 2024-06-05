@@ -2,7 +2,7 @@
 @Author: Conghao Wong
 @Date: 2023-07-12 17:38:42
 @LastEditors: Conghao Wong
-@LastEditTime: 2024-06-05 16:11:45
+@LastEditTime: 2024-06-05 19:08:35
 @Description: file content
 @Github: https://cocoon2wong.github.io
 @Copyright 2023 Conghao Wong, All Rights Reserved.
@@ -59,6 +59,9 @@ MARKER_CIRCLE_RADIUS = 3
 MARKER_RADIUS = 5
 MARKER_TAG = 'indicator'
 
+SEG_MAP_R = 0xdf
+SEG_MAP_G = 0xb0
+SEG_MAP_B = 0xa6
 
 dir_check(os.path.dirname(LOG_PATH))
 
@@ -70,7 +73,7 @@ class ToyArgs(EmptyArgs):
         """
         Choose whether to draw segmentation maps on the canvas.
         """
-        return self._arg('draw_seg_map', 0, TEMPORARY)
+        return self._arg('draw_seg_map', 1, TEMPORARY)
     
     @property
     def points(self) -> int:
@@ -556,8 +559,10 @@ class SocialCircleToy():
 
                 seg_map = self.t.model.get_input(self.inputs, SEG)[0][..., None]
                 seg_map_alpha = seg_map
-                seg_map = 255 * torch.concat([seg_map, seg_map, seg_map,
-                                            0.5 * seg_map_alpha], dim=-1)
+                seg_map = torch.concat([SEG_MAP_R * seg_map, 
+                                        SEG_MAP_G * seg_map, 
+                                        SEG_MAP_B * seg_map,
+                                        255 * 0.5 * seg_map_alpha], dim=-1)
                 
                 seg_map = Image.fromarray(seg_map.numpy().astype(np.uint8))
                 seg_map = seg_map.resize((self.image.width(),
