@@ -2,7 +2,7 @@
 @Author: Conghao Wong
 @Date: 2023-07-12 17:38:42
 @LastEditors: Conghao Wong
-@LastEditTime: 2024-05-30 13:54:03
+@LastEditTime: 2024-06-05 15:54:32
 @Description: file content
 @Github: https://cocoon2wong.github.io
 @Copyright 2023 Conghao Wong, All Rights Reserved.
@@ -37,9 +37,10 @@ SEG = segMaps.INPUT_TYPES.SEG_MAP
 DATASET = 'ETH-UCY'
 SPLIT = 'zara1'
 CLIP = 'zara1'
-MODEL_PATH = 'linear'
+MODEL_PATH = 'static'
 
 TEMP_IMG_PATH = './temp_files/socialcircle_toy_example/fig.png'
+TEMP_SEG_MAP_PATH = './temp_files/socialcircle_toy_example/seg.png'
 TEMP_RGB_IMG_PATH = './temp_files/socialcircle_toy_example/fig_rgb.png'
 LOG_PATH = './temp_files/socialcircle_toy_example/run.log'
 
@@ -58,6 +59,7 @@ MARKER_RADIUS = 5
 MARKER_TAG = 'indicator'
 
 THREE_POINTS_FALG = '--threepoints'
+DRAW_SEG_MAP_FLAG = '--draw_seg_map'
 
 dir_check(os.path.dirname(LOG_PATH))
 
@@ -94,6 +96,10 @@ class SocialCircleToy():
         # The maximum number of manual agents
         self.mpoints = 3 if THREE_POINTS_FALG in sys.argv else 2
         self.interp_model = None
+
+        # Whether to draw seg maps
+        self.draw_seg_map = True if DRAW_SEG_MAP_FLAG in sys.argv else False
+        self.seg_map = None
 
         # TK variables
         self.tk_vars: dict[str, tk.StringVar] = {}
@@ -516,8 +522,29 @@ class SocialCircleToy():
         if self.image:
             canvas.create_image(MAX_WIDTH//2, MAX_HEIGHT//2, image=self.image)
 
+        # Draw segmentation map
         if self.draw_mode == DRAW_MODE_QPID_PHYSICAL:
-            self.draw_obstacle(canvas)
+            if ((self.draw_seg_map) and 
+                (self.image) and
+                (self.inputs is not None) and 
+                (SEG in self.t.model.input_types)):
+
+                seg_map = self.t.model.get_input(self.inputs, SEG)[0][..., None]
+                seg_map_alpha = seg_map
+                seg_map = 255 * torch.concat([seg_map, seg_map, seg_map,
+                                            0.5 * seg_map_alpha], dim=-1)
+                
+                seg_map = Image.fromarray(seg_map.numpy().astype(np.uint8))
+                seg_map = seg_map.resize((self.image.width(),
+                                        self.image.height()))
+                seg_map.save(TEMP_SEG_MAP_PATH)
+
+                self.seg_map = ImageTk.PhotoImage(seg_map)
+                canvas.create_image(MAX_WIDTH//2, MAX_HEIGHT//2, 
+                                    image=self.seg_map)
+
+            else:
+                self.draw_obstacle(canvas)
 
         # Print model outputs
         time = int(1000 * self.t.model.inference_times[-1])
@@ -530,8 +557,11 @@ class SocialCircleToy():
             return
 
         # Print the SocialCircle
-        sc = self.outputs[1][1].numpy()[0]
-        social_circle.config(text=str(sc.T))
+        try:
+            sc = self.outputs[1][1].numpy()[0]
+            social_circle.config(text=str(sc.T))
+        except:
+            pass
 
         # Print all neighbors' angles
         # count = self.get_neighbor_count(self.inputs[self.get_input_index(NEI)])
