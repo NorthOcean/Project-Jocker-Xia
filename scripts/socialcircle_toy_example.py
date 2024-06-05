@@ -2,7 +2,7 @@
 @Author: Conghao Wong
 @Date: 2023-07-12 17:38:42
 @LastEditors: Conghao Wong
-@LastEditTime: 2024-06-05 19:08:35
+@LastEditTime: 2024-06-05 19:24:21
 @Description: file content
 @Github: https://cocoon2wong.github.io
 @Copyright 2023 Conghao Wong, All Rights Reserved.
@@ -59,9 +59,9 @@ MARKER_CIRCLE_RADIUS = 3
 MARKER_RADIUS = 5
 MARKER_TAG = 'indicator'
 
-SEG_MAP_R = 0xdf
-SEG_MAP_G = 0xb0
-SEG_MAP_B = 0xa6
+SEG_MAP_R = 0xff
+SEG_MAP_G = 0xa3
+SEG_MAP_B = 0x7f
 
 dir_check(os.path.dirname(LOG_PATH))
 
