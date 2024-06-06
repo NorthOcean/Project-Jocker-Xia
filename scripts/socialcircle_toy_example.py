@@ -79,7 +79,7 @@ class ToyArgs(EmptyArgs):
     def points(self) -> int:
         """
         The number of points to simulate the trajectory of manual
-        neighbor. It only accepts `2` or `3`
+        neighbor. It only accepts `2` or `3`.
         """
         return self._arg('points', 2, TEMPORARY)
     
