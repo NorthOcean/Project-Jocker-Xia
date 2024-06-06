@@ -60,13 +60,13 @@ About the `argtype`:
   Model's predicted annotation type. Can be `'coordinate'` or `'boundingbox'`. 
   The default value is `coordinate`.
 - `--auto_clear`: type=`int`, argtype=`temporary`.
-  Controls whether to clear all other saved weights except for the best one. It performs similar as running `python scripts/clear.py --logs logs`. 
+  Controls whether to clear all other saved weights except for the best one. It performs similarly to running `python scripts/clear.py --logs logs`. 
   The default value is `1`.
 - `--batch_size` (short for `-bs`): type=`int`, argtype=`dynamic`.
   Batch size when implementation. 
   The default value is `5000`.
 - `--compute_loss`: type=`int`, argtype=`temporary`.
-  Controls whether compute losses when testing. 
+  Controls whether to compute losses when testing. 
   The default value is `0`.
 - `--dataset`: type=`str`, argtype=`static`.
   Name of the video dataset to train or evaluate. For example, `'ETH-UCY'` or `'SDD'`. NOTE: DO NOT set this argument manually. 
@@ -75,19 +75,19 @@ About the `argtype`:
   Controls whether to draw visualized results on video frames. Accept the name of one video clip. The codes will first try to load the video file according to the path saved in the `plist` file (saved in `dataset_configs` folder), and if it loads successfully it will draw the results on that video, otherwise it will draw results on a blank canvas. Note that `test_mode` will be set to `'one'` and `force_split` will be set to `draw_results` if `draw_results != 'null'`. 
   The default value is `null`.
 - `--draw_videos`: type=`str`, argtype=`temporary`.
-  Controls whether draw visualized results on video frames and save as images. Accept the name of one video clip. The codes will first try to load the video according to the path saved in the `plist` file, and if successful it will draw the visualization on the video, otherwise it will draw on a blank canvas. Note that `test_mode` will be set to `'one'` and `force_split` will be set to `draw_videos` if `draw_videos != 'null'`. 
+  Controls whether to draw visualized results on video frames and save them as images. Accept the name of one video clip. The codes will first try to load the video according to the path saved in the `plist` file, and if successful it will draw the visualization on the video, otherwise it will draw on a blank canvas. Note that `test_mode` will be set to `'one'` and `force_split` will be set to `draw_videos` if `draw_videos != 'null'`. 
   The default value is `null`.
 - `--epochs`: type=`int`, argtype=`static`.
   Maximum training epochs. 
   The default value is `500`.
 - `--experimental`: type=`bool`, argtype=`temporary`.
-  NOTE: It is only used for code test. 
+  NOTE: It is only used for code tests. 
   The default value is `False`.
 - `--feature_dim`: type=`int`, argtype=`static`.
   Feature dimensions that are used in most layers. 
   The default value is `128`.
 - `--force_anntype`: type=`str`, argtype=`temporary`.
-  Assign the prediction type. It is now only used for silverballers models that are trained with annotation type `coordinate` but want to test on datasets with annotation type `boundingbox`. 
+  Assign the prediction type. It is now only used for silverballers models that are trained with annotation type `coordinate` but to be tested on datasets with annotation type `boundingbox`. 
   The default value is `null`.
 - `--force_clip`: type=`str`, argtype=`temporary`.
   Force test video clip (ignore the train/test split). It only works when `test_mode` has been set to `one`. 
@@ -105,7 +105,7 @@ About the `argtype`:
   Print help information on the screen. 
   The default value is `null`.
 - `--input_pred_steps`: type=`str`, argtype=`static`.
-  Indices of future time steps that used as extra model inputs. It accepts a string that contains several integer numbers separated with `'_'`. For example, `'3_6_9'`. It will take the corresponding ground truth points as the input when training the model, and take the first output of the former network as this input when testing the model. Set it to `'null'` to disable this extra model inputs. 
+  Indices of future time steps that are used as extra model inputs. It accepts a string that contains several integer numbers separated with `'_'`. For example, `'3_6_9'`. It will take the corresponding ground truth points as the input when training the model, and take the first output of the former network as this input when testing the model. Set it to `'null'` to disable these extra model inputs. 
   The default value is `null`.
 - `--interval`: type=`float`, argtype=`static`.
   Time interval of each sampled trajectory point. 
@@ -120,16 +120,16 @@ About the `argtype`:
   Learning rate. 
   The default value is `0.001`.
 - `--macos`: type=`int`, argtype=`temporary`.
-  (Experimental) Choose whether enable the `MPS (Metal Performance Shaders)` on Apple platforms (instead of running on CPUs). 
+  (Experimental) Choose whether to enable the `MPS (Metal Performance Shaders)` on Apple platforms (instead of running on CPUs). 
   The default value is `0`.
 - `--max_agents`: type=`int`, argtype=`static`.
-  Max number of agents to predict in one frame. It only works when `model_type == 'frame-based'`. 
+  Max number of agents to predict per frame. It only works when `model_type == 'frame-based'`. 
   The default value is `50`.
 - `--model_name`: type=`str`, argtype=`static`.
   Customized model name. 
   The default value is `model`.
 - `--model_type`: type=`str`, argtype=`static`.
-  Model type, canbe `'agent-based'` or `'frame-based'`. 
+  Model type. It can be `'agent-based'` or `'frame-based'`. 
   The default value is `agent-based`.
 - `--model`: type=`str`, argtype=`static`.
   The model type used to train or test. 
@@ -180,7 +180,7 @@ About the `argtype`:
   Choose whether to update (overwrite) the saved arg files or not. 
   The default value is `0`.
 - `--verbose` (short for `-v`): type=`int`, argtype=`temporary`.
-  Controls if print verbose logs and outputs to the terminal. 
+  Controls whether to print verbose logs and outputs to the terminal. 
   The default value is `0`.
 
 ### V^2-Net Args
@@ -262,11 +262,11 @@ About the `argtype`:
 
 - `--draw_seg_map`: type=`int`, argtype=`temporary`.
   Choose whether to draw segmentation maps on the canvas. 
-  The default value is `0`.
+  The default value is `1`.
 - `--lite`: type=`int`, argtype=`temporary`.
   Choose whether to show the lite version of tk window. 
   The default value is `0`.
 - `--points`: type=`int`, argtype=`temporary`.
-  The number of points to simulate the trajectory of manual neighbor. It only accepts `2` or `3` 
+  The number of points to simulate the trajectory of manual neighbor. It only accepts `2` or `3`. 
   The default value is `2`.
 <!-- DO NOT CHANGE THIS LINE -->
