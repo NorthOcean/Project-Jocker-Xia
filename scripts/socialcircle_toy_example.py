@@ -2,7 +2,7 @@
 @Author: Conghao Wong
 @Date: 2023-07-12 17:38:42
 @LastEditors: Conghao Wong
-@LastEditTime: 2024-06-05 19:24:21
+@LastEditTime: 2024-06-26 20:59:21
 @Description: file content
 @Github: https://cocoon2wong.github.io
 @Copyright 2023 Conghao Wong, All Rights Reserved.
@@ -89,6 +89,15 @@ class ToyArgs(EmptyArgs):
         Choose whether to show the lite version of tk window.
         """
         return self._arg('lite', 0, TEMPORARY)
+    
+    @property
+    def physical_manual_neighbor_mode(self) -> float:
+        """
+        Mode for the manual neighbor on segmentation maps.
+        - Mode `1`: Add obstacles to the given position;
+        - Mode `0`: Set areas to be walkable.
+        """
+        return self._arg('physical_manual_neighbor_mode', 1.0, TEMPORARY)
     
 
 qpid.register_args(ToyArgs, 'Toy Example Args')
@@ -336,7 +345,7 @@ class SocialCircleToy():
         ys.sort()
 
         new_map = deepcopy(seg_map)
-        new_map[..., xs[0]:xs[1], ys[0]:ys[1]] = 1.0
+        new_map[..., xs[0]:xs[1], ys[0]:ys[1]] = self.args.physical_manual_neighbor_mode
         return new_map
 
     def forward(self, inputs: list[torch.Tensor]):
