@@ -2,7 +2,7 @@
 @Author: Conghao Wong
 @Date: 2023-07-12 17:38:42
 @LastEditors: Conghao Wong
-@LastEditTime: 2024-06-26 20:59:21
+@LastEditTime: 2024-07-01 10:46:36
 @Description: file content
 @Github: https://cocoon2wong.github.io
 @Copyright 2023 Conghao Wong, All Rights Reserved.
@@ -99,6 +99,13 @@ class ToyArgs(EmptyArgs):
         """
         return self._arg('physical_manual_neighbor_mode', 1.0, TEMPORARY)
     
+    @property
+    def weights(self) -> str:
+        """
+        The default weights to load.
+        """
+        return self._arg('weights', MODEL_PATH, TEMPORARY, short_name='w')
+
 
 qpid.register_args(ToyArgs, 'Toy Example Args')
 
@@ -770,6 +777,11 @@ if __name__ == '__main__':
     sc = tk.Label(RF, width=60, **r_args, **t_args)
     angles = tk.Label(RF, width=60, **r_args, **t_args)
     canvas = tk.Canvas(RF, width=MAX_WIDTH, height=MAX_HEIGHT, **r_args)
+
+    # Check weights
+    if (p := toy.args.weights) != MODEL_PATH:
+        toy.load_model(args(p))
+        model_path.config(text=p)
 
     if not toy.args.lite:
         tk.Label(RF, text='Predictions', **TK_TITLE_STYLE, **r_args, **t_args).grid(
