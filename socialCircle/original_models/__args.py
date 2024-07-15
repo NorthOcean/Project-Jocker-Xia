@@ -1,8 +1,8 @@
 """
 @Author: Conghao Wong
 @Date: 2024-03-20 10:15:57
-@LastEditors: Conghao Wong
-@LastEditTime: 2024-03-21 09:44:18
+@LastEditors: Beihao Xia
+@LastEditTime: 2024-07-15 20:17:33
 @Description: file content
 @Github: https://cocoon2wong.github.io
 @Copyright 2024 Conghao Wong, All Rights Reserved.
@@ -35,3 +35,11 @@ class VArgs(EmptyArgs):
         """
         return self._arg('T', 'fft', argtype=STATIC, short_name='T',
                          desc_in_model_summary='Transform type (trajectory)')
+
+    @property
+    def use_amp_phase(self) -> int:
+        """
+        Control whether to use amplitudes and phases instead of
+        real and image portions in the fft layer.
+        """
+        return self._arg('use_amp_phase', 0, argtype=STATIC)

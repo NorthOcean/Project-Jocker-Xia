@@ -1,8 +1,8 @@
 """
 @Author: Conghao Wong
 @Date: 2022-07-05 16:00:26
-@LastEditors: Conghao Wong
-@LastEditTime: 2024-05-30 13:46:19
+@LastEditors: Beihao Xia
+@LastEditTime: 2024-07-15 20:19:46
 @Description: First stage V^2-Net model.
 @Github: https://github.com/cocoon2wong
 @Copyright 2022 Conghao Wong, All Rights Reserved.
@@ -47,8 +47,10 @@ class VAModel(Model):
         tlayer, itlayer = layers.get_transform_layers(self.v_args.T)
 
         # Transform layers
-        self.t1 = tlayer((self.args.obs_frames, self.dim))
-        self.it1 = itlayer((len(self.output_pred_steps), self.dim))
+        self.t1 = tlayer((self.args.obs_frames, self.dim),
+                         use_amp_phase=self.v_args.use_amp_phase)
+        self.it1 = itlayer((len(self.output_pred_steps), self.dim),
+                           use_amp_phase=self.v_args.use_amp_phase)
 
         # Trajectory encoding
         self.te = layers.TrajEncoding(self.dim, self.d//2,
